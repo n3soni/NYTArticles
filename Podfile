@@ -7,6 +7,7 @@ target 'NYTArticles' do
 
   # Pods for NYTArticles
 pod 'Alamofire'
+pod 'AlamofireObjectMapper'
 
   target 'NYTArticlesTests' do
     inherit! :search_paths
