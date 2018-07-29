@@ -7,6 +7,7 @@
 //
 
 import UIKit
+import Alamofire
 
 class ArticleCell: UITableViewCell {
     
@@ -27,6 +28,32 @@ class ArticleCell: UITableViewCell {
         lblByLine.text = article.byline ?? ""
         lblSource.text = article.source ?? ""
         lblPublishDate.text = article.publishedDate ?? ""
+        if let arrMetaDatas = article.media?[0].mediaMetadata {
+            let metaDatas = arrMetaDatas.filter({$0.format! == "Standard Thumbnail"})
+            if metaDatas.count > 0 {
+                if let fileUrlString = metaDatas.first?.url {
+                    downloadAndSaveThumb(fileUrlString)
+                }
+            }
+        }
+    }
+    
+    func downloadAndSaveThumb(_ urlString: String) {
+        let destination: DownloadRequest.DownloadFileDestination = { _, _ in
+            let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            let fileName = urlString.components(separatedBy: "/").last
+            let fileURL = documentsURL.appendingPathComponent(fileName!)
+
+            return (fileURL, [.removePreviousFile, .createIntermediateDirectories])
+        }
+
+        Alamofire.download(urlString, to: destination).response { response in
+            print(response)
+
+            if let imagePath = response.destinationURL?.path {
+                self.imgArticle.image = UIImage(contentsOfFile: imagePath)
+            }
+        }
     }
 
     override func setSelected(_ selected: Bool, animated: Bool) {
